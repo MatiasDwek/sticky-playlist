@@ -24,7 +24,7 @@ object Common extends AutoPlugin {
       "-Ywarn-numeric-widen",
       "-Xfatal-warnings"
     ),
-    scalacOptions in Test ++= Seq("-Yrangepos"),
+    Test / scalacOptions ++= Seq("-Yrangepos"),
     autoAPIMappings := true
   )
 }

@@ -43,8 +43,12 @@ trait PlaylistRepository {
  * such as rendering.
  */
 @Singleton
-class PlaylistRepositoryImpl @Inject()()(implicit ec: PlaylistExecutionContext)
+class PlaylistRepositoryImpl @Inject()(secretFetcher: SecretFetcher)(implicit ec: PlaylistExecutionContext)
   extends PlaylistRepository {
+
+  import com.wrapper.spotify.SpotifyApi
+
+  import scala.jdk.FutureConverters._
 
   private val logger = Logger(this.getClass)
 
@@ -58,17 +62,34 @@ class PlaylistRepositoryImpl @Inject()()(implicit ec: PlaylistExecutionContext)
 
   override def list()(
     implicit mc: MarkerContext): Future[Iterable[PlaylistData]] = {
-    Future {
-      logger.trace(s"list: ")
-      playlistList
+    logger.trace(s"list: ")
+    val token = "some token"
+    val spotifyApi = new SpotifyApi.Builder().setAccessToken(token).build
+    val getPlaylistsBuilder = spotifyApi.getListOfCurrentUsersPlaylists
+      .limit(10)
+      .offset(0)
+      .build
+    val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
+    getPlaylistsRequest.map { playlists =>
+      playlists.getItems.map { p =>
+        PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
+      }
     }
   }
 
   override def get(id: PlaylistId)(
     implicit mc: MarkerContext): Future[Option[PlaylistData]] = {
-    Future {
-      logger.trace(s"get: id = $id")
-      playlistList.find(playlist => playlist.id == id)
+
+    logger.trace(s"get: id = $id")
+    val token = "some token"
+    val spotifyApi = new SpotifyApi.Builder().setAccessToken(token).build
+    val getPlaylistsBuilder = spotifyApi.getPlaylist(id.underlying)
+      .build
+    val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
+    getPlaylistsRequest.map { p =>
+      Option(p).map { p =>
+        PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
+      }
     }
   }
 
@@ -78,5 +99,4 @@ class PlaylistRepositoryImpl @Inject()()(implicit ec: PlaylistExecutionContext)
       data.id
     }
   }
-
 }

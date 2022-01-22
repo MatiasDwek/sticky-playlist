@@ -51,28 +51,23 @@ class PlaylistRepositoryImpl @Inject()(secretFetcher: SecretFetcher)(implicit ec
   import scala.jdk.FutureConverters._
 
   private val logger = Logger(this.getClass)
-
-  private val playlistList = List(
-    PlaylistData(PlaylistId("abc"), "title 1", "blog playlist 1"),
-    PlaylistData(PlaylistId("def"), "title 2", "blog playlist 2"),
-    PlaylistData(PlaylistId("ghi"), "title 3", "blog playlist 3"),
-    PlaylistData(PlaylistId("fge"), "title 4", "blog playlist 4"),
-    PlaylistData(PlaylistId("qws"), "title 5", "blog playlist 5")
-  )
-
+  
   override def list()(
     implicit mc: MarkerContext): Future[Iterable[PlaylistData]] = {
     logger.trace(s"list: ")
-    val token = "some token"
-    val spotifyApi = new SpotifyApi.Builder().setAccessToken(token).build
-    val getPlaylistsBuilder = spotifyApi.getListOfCurrentUsersPlaylists
-      .limit(10)
-      .offset(0)
-      .build
-    val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
-    getPlaylistsRequest.map { playlists =>
-      playlists.getItems.map { p =>
-        PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
+    val authToken = secretFetcher.getAuthorizationToken(UserId("1"))
+    authToken flatMap { t =>
+      val spotifyApi = new SpotifyApi.Builder().setAccessToken(t.token).build
+      val getPlaylistsBuilder = spotifyApi.getListOfCurrentUsersPlaylists
+        .limit(10)
+        .offset(0)
+        .build
+      val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
+
+      getPlaylistsRequest map { playlists =>
+        playlists.getItems map { p =>
+          PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
+        }
       }
     }
   }
@@ -81,14 +76,16 @@ class PlaylistRepositoryImpl @Inject()(secretFetcher: SecretFetcher)(implicit ec
     implicit mc: MarkerContext): Future[Option[PlaylistData]] = {
 
     logger.trace(s"get: id = $id")
-    val token = "some token"
-    val spotifyApi = new SpotifyApi.Builder().setAccessToken(token).build
-    val getPlaylistsBuilder = spotifyApi.getPlaylist(id.underlying)
-      .build
-    val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
-    getPlaylistsRequest.map { p =>
-      Option(p).map { p =>
-        PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
+    val authToken = secretFetcher.getAuthorizationToken(UserId("1"))
+    authToken flatMap { t =>
+      val spotifyApi = new SpotifyApi.Builder().setAccessToken(t.token).build
+      val getPlaylistsBuilder = spotifyApi.getPlaylist(id.underlying)
+        .build
+      val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
+      getPlaylistsRequest.map { p =>
+        Option(p).map { p =>
+          PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
+        }
       }
     }
   }

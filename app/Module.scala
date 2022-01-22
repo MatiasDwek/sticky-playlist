@@ -16,5 +16,6 @@ class Module(environment: Environment, configuration: Configuration)
 
   override def configure() = {
     bind[PlaylistRepository].to[PlaylistRepositoryImpl].in[Singleton]()
+    bind[SecretFetcher].to[SecretFetcherImpl].in[Singleton]()
   }
 }

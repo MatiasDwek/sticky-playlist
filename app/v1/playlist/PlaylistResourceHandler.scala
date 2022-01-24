@@ -23,7 +23,7 @@ object PlaylistResource {
  * Controls access to the backend data, returning [[PlaylistResource]]
  */
 class PlaylistResourceHandler @Inject()(routerProvider: Provider[PlaylistRouter],
-                                        playlistRepository: PlaylistRepository)
+                                        playlistRepository: PlaylistService)
                                        (implicit ec: ExecutionContext) {
 
   def create(playlistInput: PlaylistFormInput)(

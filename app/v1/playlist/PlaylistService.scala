@@ -27,7 +27,7 @@ class PlaylistExecutionContext @Inject()(actorSystem: ActorSystem)
 /**
  * A pure non-blocking interface for the PlaylistRepository.
  */
-trait PlaylistRepository {
+trait PlaylistService {
   def create(data: PlaylistData)(implicit mc: MarkerContext): Future[PlaylistId]
 
   def list()(implicit mc: MarkerContext): Future[Iterable[PlaylistData]]
@@ -43,15 +43,15 @@ trait PlaylistRepository {
  * such as rendering.
  */
 @Singleton
-class PlaylistRepositoryImpl @Inject()(secretFetcher: SecretFetcher)(implicit ec: PlaylistExecutionContext)
-  extends PlaylistRepository {
+class PlaylistServiceImpl @Inject()(secretFetcher: SecretFetcher)(implicit ec: PlaylistExecutionContext)
+  extends PlaylistService {
 
   import com.wrapper.spotify.SpotifyApi
 
   import scala.jdk.FutureConverters._
 
   private val logger = Logger(this.getClass)
-  
+
   override def list()(
     implicit mc: MarkerContext): Future[Iterable[PlaylistData]] = {
     logger.trace(s"list: ")

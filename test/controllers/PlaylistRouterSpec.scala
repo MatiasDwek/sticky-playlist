@@ -7,14 +7,14 @@ import play.api.test.CSRFTokenHelper._
 import play.api.test.Helpers._
 import play.api.test._
 import play.api.{Application, MarkerContext, inject}
-import v1.playlist.{PlaylistData, PlaylistId, PlaylistRepository, PlaylistResource}
+import v1.playlist.{PlaylistData, PlaylistId, PlaylistResource, PlaylistService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class PlaylistRouterSpec extends PlaySpec with GuiceOneAppPerTest {
   override def fakeApplication(): Application =
-    GuiceApplicationBuilder().overrides(inject.bind[PlaylistRepository].to[MockedRepository]).build()
+    GuiceApplicationBuilder().overrides(inject.bind[PlaylistService].to[MockedService]).build()
 
   "PlaylistRouter" should {
     "render the list of playlists" in {
@@ -45,7 +45,7 @@ class PlaylistRouterSpec extends PlaySpec with GuiceOneAppPerTest {
   }
 }
 
-class MockedRepository extends PlaylistRepository {
+class MockedService extends PlaylistService {
   override def create(data: PlaylistData)(implicit mc: MarkerContext): Future[PlaylistId] = Future {
     PlaylistId("abc")
   }

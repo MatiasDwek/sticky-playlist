@@ -15,7 +15,7 @@ class Module(environment: Environment, configuration: Configuration)
     with ScalaModule {
 
   override def configure() = {
-    bind[PlaylistRepository].to[PlaylistRepositoryImpl].in[Singleton]()
+    bind[PlaylistService].to[PlaylistServiceImpl].in[Singleton]()
     bind[SecretFetcher].to[SecretFetcherImpl].in[Singleton]()
   }
 }

@@ -16,7 +16,7 @@ class StreamingServiceProxyExecutionContext @Inject()(actorSystem: ActorSystem)
 trait StreamingServiceProxy {
   def listPlaylistsOfUser(userId: UserId): Future[Iterable[PlaylistData]]
 
-  def get(id: PlaylistId, userId: UserId): Future[Option[PlaylistData]]
+  def getPlaylist(id: PlaylistId, userId: UserId): Future[Option[PlaylistData]]
 }
 
 @Singleton
@@ -44,7 +44,7 @@ class SpotifyProxy @Inject()(secretFetcher: SecretFetcher)(implicit ec: Streamin
     }
   }
 
-  override def get(id: PlaylistId, userId: UserId): Future[Option[PlaylistData]] = {
+  override def getPlaylist(id: PlaylistId, userId: UserId): Future[Option[PlaylistData]] = {
     logger.info(s"fetching playlist with id = $id for user=$userId from Spotify")
     val authToken = secretFetcher.getAuthorizationToken(userId)
     authToken flatMap { t =>

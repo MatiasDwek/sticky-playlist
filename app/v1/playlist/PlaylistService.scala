@@ -36,58 +36,27 @@ trait PlaylistService {
 }
 
 /**
- * A trivial implementation for the Playlist Repository.
- *
  * A custom execution context is used here to establish that blocking operations should be
  * executed in a different thread than Play's ExecutionContext, which is used for CPU bound tasks
  * such as rendering.
  */
 @Singleton
-class PlaylistServiceImpl @Inject()(secretFetcher: SecretFetcher)(implicit ec: PlaylistExecutionContext)
+class PlaylistServiceImpl @Inject()(streamingServiceProxy: StreamingServiceProxy)(implicit ec: PlaylistExecutionContext)
   extends PlaylistService {
-
-  import com.wrapper.spotify.SpotifyApi
-
-  import scala.jdk.FutureConverters._
-
   private val logger = Logger(this.getClass)
 
   override def list()(
     implicit mc: MarkerContext): Future[Iterable[PlaylistData]] = {
     logger.trace(s"list: ")
-    val authToken = secretFetcher.getAuthorizationToken(UserId("1"))
-    authToken flatMap { t =>
-      val spotifyApi = new SpotifyApi.Builder().setAccessToken(t.token).build
-      val getPlaylistsBuilder = spotifyApi.getListOfCurrentUsersPlaylists
-        .limit(10)
-        .offset(0)
-        .build
-      val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
-
-      getPlaylistsRequest map { playlists =>
-        playlists.getItems map { p =>
-          PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
-        }
-      }
-    }
+    val dummyUserId = UserId("1")
+    streamingServiceProxy.listPlaylistsOfUser(dummyUserId)
   }
 
   override def get(id: PlaylistId)(
     implicit mc: MarkerContext): Future[Option[PlaylistData]] = {
-
     logger.trace(s"get: id = $id")
-    val authToken = secretFetcher.getAuthorizationToken(UserId("1"))
-    authToken flatMap { t =>
-      val spotifyApi = new SpotifyApi.Builder().setAccessToken(t.token).build
-      val getPlaylistsBuilder = spotifyApi.getPlaylist(id.underlying)
-        .build
-      val getPlaylistsRequest = getPlaylistsBuilder.executeAsync.asScala
-      getPlaylistsRequest.map { p =>
-        Option(p).map { p =>
-          PlaylistData(PlaylistId(p.getId), p.getName, p.getUri)
-        }
-      }
-    }
+    val dummyUserId = UserId("1")
+    streamingServiceProxy.getPlaylist(id, dummyUserId)
   }
 
   def create(data: PlaylistData)(implicit mc: MarkerContext): Future[PlaylistId] = {

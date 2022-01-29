@@ -13,7 +13,8 @@ lazy val root = (project in file("."))
       "net.codingwell" %% "scala-guice" % "4.2.6",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
       // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-      "se.michaelthelin.spotify" % "spotify-web-api-java" % "6.4.0"
+      "se.michaelthelin.spotify" % "spotify-web-api-java" % "6.4.0",
+      "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % "test"
     ),
     scalacOptions ++= Seq(
       "-feature",

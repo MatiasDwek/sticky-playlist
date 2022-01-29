@@ -17,5 +17,6 @@ class Module(environment: Environment, configuration: Configuration)
   override def configure() = {
     bind[PlaylistService].to[PlaylistServiceImpl].in[Singleton]()
     bind[SecretFetcher].to[SecretFetcherImpl].in[Singleton]()
+    bind[StreamingServiceProxy].to[SpotifyProxy].in[Singleton]()
   }
 }

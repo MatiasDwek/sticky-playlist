@@ -33,6 +33,8 @@ trait PlaylistService {
   def list()(implicit mc: MarkerContext): Future[Iterable[PlaylistData]]
 
   def get(id: PlaylistId)(implicit mc: MarkerContext): Future[Option[PlaylistData]]
+
+  def followPlaylist(id: PlaylistId)(implicit mc: MarkerContext): Future[Unit]
 }
 
 /**
@@ -57,6 +59,13 @@ class PlaylistServiceImpl @Inject()(streamingServiceProxy: StreamingServiceProxy
     logger.trace(s"get: id = $id")
     val dummyUserId = UserId("1")
     streamingServiceProxy.getPlaylist(id, dummyUserId)
+  }
+
+  override def followPlaylist(id: PlaylistId)(implicit mc: MarkerContext): Future[Unit] = {
+    Future {
+      logger.trace(s"following playlist = $id")
+      Future.successful(None)
+    }
   }
 
   def create(data: PlaylistData)(implicit mc: MarkerContext): Future[PlaylistId] = {

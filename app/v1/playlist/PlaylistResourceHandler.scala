@@ -23,33 +23,38 @@ object PlaylistResource {
  * Controls access to the backend data, returning [[PlaylistResource]]
  */
 class PlaylistResourceHandler @Inject()(routerProvider: Provider[PlaylistRouter],
-                                        playlistRepository: PlaylistService)
+                                        playlistService: PlaylistService)
                                        (implicit ec: ExecutionContext) {
 
   def create(playlistInput: PlaylistFormInput)(
     implicit mc: MarkerContext): Future[PlaylistResource] = {
     val data = PlaylistData(PlaylistId("999"), playlistInput.title, playlistInput.body)
     // We don't actually create the playlist, so return what we have
-    playlistRepository.create(data).map { _ =>
+    playlistService.create(data).map { _ =>
       createPlaylistResource(data)
     }
   }
-  private def createPlaylistResource(p: PlaylistData): PlaylistResource = {
-    PlaylistResource(p.id.toString, routerProvider.get.link(p.id), p.title, p.body)
-  }
   def lookup(id: String)(
     implicit mc: MarkerContext): Future[Option[PlaylistResource]] = {
-    val playlistFuture = playlistRepository.get(PlaylistId(id))
+    val playlistFuture = playlistService.get(PlaylistId(id))
     playlistFuture.map { maybePlaylistData =>
       maybePlaylistData.map { playlistData =>
         createPlaylistResource(playlistData)
       }
     }
   }
+  def followPlaylist(id: String)(
+    implicit mc: MarkerContext): Future[Unit] = {
+    playlistService.followPlaylist(PlaylistId(id))
+  }
   def find(implicit mc: MarkerContext): Future[Iterable[PlaylistResource]] = {
-    playlistRepository.list().map { playlistDataList =>
+    playlistService.list().map { playlistDataList =>
       playlistDataList.map(playlistData => createPlaylistResource(playlistData))
     }
   }
+  private def createPlaylistResource(p: PlaylistData): PlaylistResource = {
+    PlaylistResource(p.id.toString, routerProvider.get.link(p.id), p.title, p.body)
+  }
+
 
 }

@@ -27,6 +27,9 @@ class PlaylistRouter @Inject()(controller: PlaylistController) extends SimpleRou
 
     case GET(p"/$id") =>
       controller.show(id)
+
+    case POST(p"/followed/$id") =>
+      controller.follow(id)
   }
 
 }

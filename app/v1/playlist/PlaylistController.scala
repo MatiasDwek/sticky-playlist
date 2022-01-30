@@ -63,4 +63,12 @@ class PlaylistController @Inject()(cc: PlaylistControllerComponents)(
         Ok(Json.toJson(playlist))
       }
   }
+
+  def follow(id: String): Action[AnyContent] = PlaylistAction.async {
+    implicit request =>
+      logger.trace(s"follow: id = $id")
+      playlistResourceHandler.followPlaylist(id).map { playlist =>
+        Ok
+      }
+  }
 }

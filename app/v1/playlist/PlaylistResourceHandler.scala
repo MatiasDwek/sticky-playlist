@@ -43,6 +43,9 @@ class PlaylistResourceHandler @Inject()(routerProvider: Provider[PlaylistRouter]
       }
     }
   }
+  private def createPlaylistResource(p: PlaylistData): PlaylistResource = {
+    PlaylistResource(p.id.toString, routerProvider.get.link(p.id), p.title, p.body)
+  }
   def followPlaylist(id: String)(
     implicit mc: MarkerContext): Future[Unit] = {
     playlistService.followPlaylist(PlaylistId(id))
@@ -52,9 +55,4 @@ class PlaylistResourceHandler @Inject()(routerProvider: Provider[PlaylistRouter]
       playlistDataList.map(playlistData => createPlaylistResource(playlistData))
     }
   }
-  private def createPlaylistResource(p: PlaylistData): PlaylistResource = {
-    PlaylistResource(p.id.toString, routerProvider.get.link(p.id), p.title, p.body)
-  }
-
-
 }

@@ -7,6 +7,7 @@ import play.api.mvc._
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 case class PlaylistFormInput(title: String, body: String)
 
@@ -67,8 +68,9 @@ class PlaylistController @Inject()(cc: PlaylistControllerComponents)(
   def follow(id: String): Action[AnyContent] = PlaylistAction.async {
     implicit request =>
       logger.trace(s"follow: id = $id")
-      playlistResourceHandler.followPlaylist(id).map { playlist =>
-        Ok
+      playlistResourceHandler.followPlaylist(id).transform {
+        case Success(_) => Try(Ok)
+        case Failure(_) => Try(NotFound)
       }
   }
 }

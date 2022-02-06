@@ -22,7 +22,7 @@ object PlaylistId {
 }
 
 class PlaylistExecutionContext @Inject()(actorSystem: ActorSystem)
-  extends CustomExecutionContext(actorSystem, "repository.dispatcher")
+  extends CustomExecutionContext(actorSystem, "service.dispatcher")
 
 /**
  * A pure non-blocking interface for the PlaylistRepository.

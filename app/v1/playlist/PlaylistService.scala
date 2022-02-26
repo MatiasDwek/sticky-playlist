@@ -1,7 +1,7 @@
 package v1.playlist
 
 import akka.actor.ActorSystem
-import connectors.ApplicationDatabase
+import connectors.{ApplicationDatabase, StreamingServiceProxy, UserId}
 import play.api.libs.concurrent.CustomExecutionContext
 import play.api.{Logger, MarkerContext}
 

@@ -1,9 +1,10 @@
-package v1.playlist
+package connectors
 
 import akka.actor.ActorSystem
 import com.wrapper.spotify.SpotifyApi
 import play.api.Logger
 import play.api.libs.concurrent.CustomExecutionContext
+import v1.playlist.{PlaylistData, PlaylistId}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future

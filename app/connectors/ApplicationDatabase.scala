@@ -3,7 +3,7 @@ package connectors
 import akka.actor.ActorSystem
 import play.api.db.Database
 import play.api.libs.concurrent.CustomExecutionContext
-import v1.playlist.{PlaylistId, UserId}
+import v1.playlist.PlaylistId
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future

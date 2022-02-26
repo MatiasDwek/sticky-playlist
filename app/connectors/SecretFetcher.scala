@@ -1,4 +1,4 @@
-package v1.playlist
+package connectors
 
 import akka.actor.ActorSystem
 import play.api.libs.concurrent.CustomExecutionContext

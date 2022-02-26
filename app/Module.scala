@@ -1,4 +1,5 @@
 import com.google.inject.AbstractModule
+import connectors.{SecretFetcher, SecretFetcherImpl, SpotifyProxy, StreamingServiceProxy}
 import net.codingwell.scalaguice.ScalaModule
 import play.api.{Configuration, Environment}
 import v1.playlist._

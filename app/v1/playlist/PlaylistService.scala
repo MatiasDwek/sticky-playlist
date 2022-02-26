@@ -1,6 +1,7 @@
 package v1.playlist
 
 import akka.actor.ActorSystem
+import connectors.ApplicationDatabase
 import play.api.libs.concurrent.CustomExecutionContext
 import play.api.{Logger, MarkerContext}
 
@@ -43,7 +44,8 @@ trait PlaylistService {
  * such as rendering.
  */
 @Singleton
-class PlaylistServiceImpl @Inject()(streamingServiceProxy: StreamingServiceProxy)(implicit ec: PlaylistExecutionContext)
+class PlaylistServiceImpl @Inject()(streamingServiceProxy: StreamingServiceProxy, applicationDatabase: ApplicationDatabase)
+                                   (implicit ec: PlaylistExecutionContext)
   extends PlaylistService {
   private val logger = Logger(this.getClass)
 
@@ -64,11 +66,13 @@ class PlaylistServiceImpl @Inject()(streamingServiceProxy: StreamingServiceProxy
   override def followPlaylist(id: PlaylistId)(implicit mc: MarkerContext): Future[Unit] = {
     Future {
       logger.trace(s"following playlist = $id")
+      val dummyUserId = UserId("1")
+      applicationDatabase.followPlaylist(dummyUserId, id)
       Future.successful(None)
     }
   }
 
-  def create(data: PlaylistData)(implicit mc: MarkerContext): Future[PlaylistId] = {
+  override def create(data: PlaylistData)(implicit mc: MarkerContext): Future[PlaylistId] = {
     Future {
       logger.trace(s"create: data = $data")
       data.id

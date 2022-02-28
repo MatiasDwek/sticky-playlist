@@ -1,3 +1,5 @@
+import connectors.{ApplicationDatabase, StreamingServiceProxy, UserId}
+import dataobjects.{PlaylistData, PlaylistId}
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -6,15 +8,16 @@ import play.api.mvc.Result
 import play.api.test.CSRFTokenHelper._
 import play.api.test.Helpers._
 import play.api.test._
-import play.api.{Application, MarkerContext, inject}
-import v1.playlist.{PlaylistData, PlaylistId, PlaylistResource, PlaylistService}
+import play.api.{Application, inject}
+import v1.playlist.PlaylistResource
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class PlaylistRouterSpec extends PlaySpec with GuiceOneAppPerTest {
   override def fakeApplication(): Application =
-    GuiceApplicationBuilder().overrides(inject.bind[PlaylistService].to[MockedService]).build()
+    GuiceApplicationBuilder().overrides(inject.bind[StreamingServiceProxy].to[MockedStreamingService], inject.bind[ApplicationDatabase]
+      .to[MockedDatabaseImpl]).build()
 
   "PlaylistRouter" should {
     "render the list of playlists" in {
@@ -43,12 +46,14 @@ class PlaylistRouterSpec extends PlaySpec with GuiceOneAppPerTest {
       playlist mustBe PlaylistResource("abc", "/v1/playlists/abc", "title", "description")
     }
 
+    // TODO make this test user aware
     "follow a playlist" in {
       val request = FakeRequest(POST, "/v1/playlists/followed/abc").withHeaders(HOST -> "localhost:9000").withCSRFToken
       val response: Future[Result] = route(app, request).get
       assert(status(response) == 200)
     }
 
+    // TODO make this test user aware
     "return a 404 when following a non existing playlist" in {
       val request = FakeRequest(POST, "/v1/playlists/followed/not-a-playlist").withHeaders(HOST -> "localhost:9000").withCSRFToken
       val response: Future[Result] = route(app, request).get
@@ -57,20 +62,25 @@ class PlaylistRouterSpec extends PlaySpec with GuiceOneAppPerTest {
   }
 }
 
-class MockedService extends PlaylistService {
-  override def create(data: PlaylistData)(implicit mc: MarkerContext): Future[PlaylistId] = Future {
-    PlaylistId("abc")
-  }
-  override def list()(implicit mc: MarkerContext): Future[Iterable[PlaylistData]] = Future {
+class MockedStreamingService extends StreamingServiceProxy {
+  override def listPlaylistsOfUser(userId: UserId): Future[Iterable[PlaylistData]] = Future {
     Iterable(
       PlaylistData(PlaylistId("123"), "summer playlist", "tunes for summer"),
       PlaylistData(PlaylistId("456"), "winter playlist", "tunes for winter"))
   }
-  override def get(id: PlaylistId)(implicit mc: MarkerContext): Future[Option[PlaylistData]] = Future {
+
+  override def getPlaylist(id: PlaylistId, userId: UserId): Future[Option[PlaylistData]] = Future {
     Option(PlaylistData(PlaylistId("abc"), "title", "description"))
   }
-  override def followPlaylist(id: PlaylistId)(implicit mc: MarkerContext): Future[Unit] = {
-    if (id.underlying == "abc") Future.successful((): Unit)
-    else Future.failed(new RuntimeException("Not found"))
+}
+
+class MockedDatabaseImpl extends ApplicationDatabase {
+  override def addUser(userId: UserId): Future[Unit] = Future.successful(None)
+
+  override def followPlaylist(userId: UserId, playlistId: PlaylistId): Future[Unit] = {
+    if (playlistId.underlying == "abc")
+      Future.successful(None)
+    else
+      Future.failed(new RuntimeException("Not found"))
   }
 }

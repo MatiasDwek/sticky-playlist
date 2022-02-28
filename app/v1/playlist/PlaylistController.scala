@@ -33,7 +33,7 @@ class PlaylistController @Inject()(cc: PlaylistControllerComponents)(
 
   def index: Action[AnyContent] = PlaylistAction.async { implicit request =>
     logger.trace("index: ")
-    playlistResourceHandler.find.map { playlists =>
+    playlistResourceHandler.listUserPlaylists.map { playlists =>
       Ok(Json.toJson(playlists))
     }
   }
@@ -60,7 +60,7 @@ class PlaylistController @Inject()(cc: PlaylistControllerComponents)(
   def show(id: String): Action[AnyContent] = PlaylistAction.async {
     implicit request =>
       logger.trace(s"show: id = $id")
-      playlistResourceHandler.lookup(id).map { playlist =>
+      playlistResourceHandler.getPlaylist(id).map { playlist =>
         Ok(Json.toJson(playlist))
       }
   }

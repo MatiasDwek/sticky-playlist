@@ -1,7 +1,9 @@
 package v1.playlist
 
-import play.api.MarkerContext
+import connectors.{ApplicationDatabase, StreamingServiceProxy, UserId}
+import dataobjects.{PlaylistData, PlaylistId}
 import play.api.libs.json._
+import play.api.{Logger, MarkerContext}
 
 import javax.inject.{Inject, Provider}
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,21 +25,26 @@ object PlaylistResource {
  * Controls access to the backend data, returning [[PlaylistResource]]
  */
 class PlaylistResourceHandler @Inject()(routerProvider: Provider[PlaylistRouter],
-                                        playlistService: PlaylistService)
+                                        streamingServiceProxy: StreamingServiceProxy,
+                                        applicationDatabase: ApplicationDatabase)
                                        (implicit ec: ExecutionContext) {
+  val dummyUserId: UserId = UserId("1")
+  private val logger = Logger(this.getClass)
 
   def create(playlistInput: PlaylistFormInput)(
     implicit mc: MarkerContext): Future[PlaylistResource] = {
     val data = PlaylistData(PlaylistId("999"), playlistInput.title, playlistInput.body)
     // We don't actually create the playlist, so return what we have
-    playlistService.create(data).map { _ =>
+    Future {
+      logger.trace(s"create: data = $data")
       createPlaylistResource(data)
     }
   }
-  def lookup(id: String)(
+
+  def getPlaylist(id: String)(
     implicit mc: MarkerContext): Future[Option[PlaylistResource]] = {
-    val playlistFuture = playlistService.get(PlaylistId(id))
-    playlistFuture.map { maybePlaylistData =>
+    logger.trace(s"get: id = $id")
+    streamingServiceProxy.getPlaylist(PlaylistId(id), dummyUserId).map { maybePlaylistData =>
       maybePlaylistData.map { playlistData =>
         createPlaylistResource(playlistData)
       }
@@ -46,12 +53,14 @@ class PlaylistResourceHandler @Inject()(routerProvider: Provider[PlaylistRouter]
   private def createPlaylistResource(p: PlaylistData): PlaylistResource = {
     PlaylistResource(p.id.toString, routerProvider.get.link(p.id), p.title, p.body)
   }
-  def followPlaylist(id: String)(
-    implicit mc: MarkerContext): Future[Unit] = {
-    playlistService.followPlaylist(PlaylistId(id))
+  def followPlaylist(id: String)(implicit mc: MarkerContext): Future[Unit] = {
+    logger.trace(s"following playlist = $id")
+    val dummyUserId = UserId("1")
+    applicationDatabase.followPlaylist(dummyUserId, PlaylistId(id))
   }
-  def find(implicit mc: MarkerContext): Future[Iterable[PlaylistResource]] = {
-    playlistService.list().map { playlistDataList =>
+  def listUserPlaylists(implicit mc: MarkerContext): Future[Iterable[PlaylistResource]] = {
+    logger.trace(s"list: ")
+    streamingServiceProxy.listPlaylistsOfUser(dummyUserId).map { playlistDataList =>
       playlistDataList.map(playlistData => createPlaylistResource(playlistData))
     }
   }

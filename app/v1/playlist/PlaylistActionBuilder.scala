@@ -45,7 +45,7 @@ trait RequestMarkerContext {
 }
 
 /**
- * The action builder for the Playlist resource.
+ * The action builder for the playlist.Playlist resource.
  *
  * This is the place to put logging, metrics, to augment
  * the request with contextual data, and manipulate the result.

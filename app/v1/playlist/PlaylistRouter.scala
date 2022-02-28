@@ -1,5 +1,6 @@
 package v1.playlist
 
+import dataobjects.PlaylistId
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._

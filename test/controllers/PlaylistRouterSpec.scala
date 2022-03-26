@@ -21,41 +21,41 @@ class PlaylistRouterSpec extends PlaySpec with GuiceOneAppPerTest {
 
   "PlaylistRouter" should {
     "render the list of playlists" in {
-      val request = FakeRequest(GET, "/v1/playlists").withHeaders(HOST -> "localhost:9000").withCSRFToken
+      val request = FakeRequest(GET, "/api/v1/playlists").withHeaders(HOST -> "localhost:9000").withCSRFToken
       val response: Future[Result] = route(app, request).get
 
       val playlists: Seq[PlaylistResource] = Json.fromJson[Seq[PlaylistResource]](contentAsJson(response)).get
-      playlists.filter(_.id == "456").head mustBe PlaylistResource("456", "/v1/playlists/456", "winter playlist", "tunes for " +
+      playlists.filter(_.id == "456").head mustBe PlaylistResource("456", "/api/v1/playlists/456", "winter playlist", "tunes for " +
         "winter")
     }
 
     "render the list of playlists when url ends with a trailing slash" in {
-      val request = FakeRequest(GET, "/v1/playlists/").withHeaders(HOST -> "localhost:9000").withCSRFToken
+      val request = FakeRequest(GET, "/api/v1/playlists/").withHeaders(HOST -> "localhost:9000").withCSRFToken
       val response: Future[Result] = route(app, request).get
 
       val playlists: Seq[PlaylistResource] = Json.fromJson[Seq[PlaylistResource]](contentAsJson(response)).get
-      playlists.filter(_.id == "456").head mustBe (PlaylistResource("456", "/v1/playlists/456", "winter playlist", "tunes for" +
+      playlists.filter(_.id == "456").head mustBe (PlaylistResource("456", "/api/v1/playlists/456", "winter playlist", "tunes for" +
         " winter"))
     }
 
     "render a playlist" in {
-      val request = FakeRequest(GET, "/v1/playlists/abc").withHeaders(HOST -> "localhost:9000").withCSRFToken
+      val request = FakeRequest(GET, "/api/v1/playlists/abc").withHeaders(HOST -> "localhost:9000").withCSRFToken
       val response: Future[Result] = route(app, request).get
 
       val playlist: PlaylistResource = Json.fromJson[PlaylistResource](contentAsJson(response)).get
-      playlist mustBe PlaylistResource("abc", "/v1/playlists/abc", "title", "description")
+      playlist mustBe PlaylistResource("abc", "/api/v1/playlists/abc", "title", "description")
     }
 
     // TODO make this test user aware
     "follow a playlist" in {
-      val request = FakeRequest(POST, "/v1/playlists/followed/abc").withHeaders(HOST -> "localhost:9000").withCSRFToken
+      val request = FakeRequest(POST, "/api/v1/playlists/followed/abc").withHeaders(HOST -> "localhost:9000").withCSRFToken
       val response: Future[Result] = route(app, request).get
       assert(status(response) == 200)
     }
 
     // TODO make this test user aware
     "return a 404 when following a non existing playlist" in {
-      val request = FakeRequest(POST, "/v1/playlists/followed/not-a-playlist").withHeaders(HOST -> "localhost:9000").withCSRFToken
+      val request = FakeRequest(POST, "/api/v1/playlists/followed/not-a-playlist").withHeaders(HOST -> "localhost:9000").withCSRFToken
       val response: Future[Result] = route(app, request).get
       assert(status(response) == 404)
     }

@@ -11,7 +11,7 @@ import javax.inject.Inject
  * Routes and URLs to the PlaylistResource controller.
  */
 class PlaylistRouter @Inject()(controller: PlaylistController) extends SimpleRouter {
-  val prefix = "/v1/playlists"
+  val prefix = "/api/v1/playlists"
 
   def link(id: PlaylistId): String = {
     import io.lemonlabs.uri.dsl._

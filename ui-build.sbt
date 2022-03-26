@@ -18,8 +18,14 @@ val Error = 1
 val isWindows = System.getProperty("os.name").toLowerCase().contains("win")
 // Execute frontend test task. Update to change the frontend test task.
 def executeUiTests(implicit dir: File): Int = ifNodeModulesInstalled(runOnCommandline(FrontendCommands.test))
-// Execute frontend prod build task. Update to change the frontend prod build task.
-def executeProdBuild(implicit dir: File): Int = ifNodeModulesInstalled(runOnCommandline(FrontendCommands.build))
+// Execute task if node modules are installed, else return Error status.
+def ifNodeModulesInstalled(task: => Int)(implicit dir: File): Int =
+  if (runNpmInstall == Success) task
+  else Error
+// Create frontend build tasks for prod, dev and test execution.
+// Execute `npm install` command to install all node module dependencies. Return Success if already installed.
+def runNpmInstall(implicit dir: File): Int =
+  if (isNodeModulesInstalled) Success else runOnCommandline(FrontendCommands.dependencyInstall)
 // Execute on commandline, depending on the operating system. Used to execute npm commands.
 def runOnCommandline(script: String)(implicit dir: File): Int = {
   if (isWindows) {
@@ -28,23 +34,15 @@ def runOnCommandline(script: String)(implicit dir: File): Int = {
     Process("env CI=true " + script, dir)
   }
 } !
-// Execute task if node modules are installed, else return Error status.
-def ifNodeModulesInstalled(task: => Int)(implicit dir: File): Int =
-  if (runNpmInstall == Success) task
-  else Error
-
-
-// Create frontend build tasks for prod, dev and test execution.
-// Execute `npm install` command to install all node module dependencies. Return Success if already installed.
-def runNpmInstall(implicit dir: File): Int =
-  if (isNodeModulesInstalled) Success else runOnCommandline(FrontendCommands.dependencyInstall)
+// Check of node_modules directory exist in given directory.
+def isNodeModulesInstalled(implicit dir: File): Boolean = (dir / "node_modules").exists()
 
 `ui-test` := {
   implicit val userInterfaceRoot = baseDirectory.value / "ui"
   if (executeUiTests != Success) throw new Exception("UI tests failed!")
 }
-// Check of node_modules directory exist in given directory.
-def isNodeModulesInstalled(implicit dir: File): Boolean = (dir / "node_modules").exists()
+// Execute frontend prod build task. Update to change the frontend prod build task.
+def executeProdBuild(implicit dir: File): Int = ifNodeModulesInstalled(runOnCommandline(FrontendCommands.build))
 
 `ui-prod-build` := {
   implicit val userInterfaceRoot = baseDirectory.value / "ui"
@@ -58,4 +56,4 @@ dist := (dist dependsOn `ui-prod-build`).value
 stage := (stage dependsOn `ui-prod-build`).value
 
 // Execute frontend test task prior to play test execution.
-test := ((test in Test) dependsOn `ui-test`).value
+test := ((Test / test) dependsOn `ui-test`).value
